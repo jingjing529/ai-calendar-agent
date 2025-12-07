@@ -1,6 +1,7 @@
 // app/api/message/route.ts
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
+import { buildCalendarAgentPrompt } from "./prompt";
 
 function extractJsonBlock(text: string) {
   const fenceMatch = text.match(/```json([\s\S]*?)```/i);
@@ -79,74 +80,15 @@ export async function POST(req: Request) {
       }
     }
 
-    const prompt = `
-You are a smart conversational Google Calendar assistant.
-
-User's base timezone: ${timezone}
-Today's date (authoritative, do NOT question it): ${todayDate}
-
-You have access to:
-- A list of the user's upcoming events (from Google Calendar).
-- The user's base timezone and today's date.
-- The LAST EVENT YOU ASSISTED WITH (for conversational context).
-
-Upcoming events:
-${JSON.stringify(eventsForContext, null, 2)}
-
-Last event you assisted with:
-${
-  lastEventId
-    ? `{
-  "eventId": "${lastEventId}",
-  "summary": "${lastEventSummary}",
-  "start": "${lastEventStart}"
-}`
-    : "null"
-}
-
-Conversation grounding rules:
-- If the user says "change that", "update it", "move that meeting", etc.,
-  assume they refer to the LAST EVENT YOU ASSISTED WITH above.
-- If there is no last event and the user does not specify which event,
-  use action: "unknown" and explain in the message.
-
-Actions:
-- "insert"  => create a new event.
-- "edit"    => modify an existing event.
-- "delete"  => delete an existing event.
-- "unknown" => you cannot safely decide what to do.
-
-For "insert":
-- Provide a full Google Calendar event object in "event":
-  {
-    "summary": "...",
-    "description": "...",
-    "start": { "dateTime": "...", "timeZone": "${timezone}" } or { "date": "YYYY-MM-DD" },
-    "end":   { "dateTime": "...", "timeZone": "${timezone}" } or { "date": "YYYY-MM-DD" }
-  }
-
-For "edit":
-- You MUST provide:
-  - "eventId": the id of the event to modify (usually from the last assisted event or the list),
-  - "event": an object containing the fields you want to change.
-- This "event" object will be used directly as the PATCH body for Google Calendar.
-- If you do NOT know what to change exactly, use "unknown".
-
-For "delete":
-- Provide only "eventId" (from the list or last assisted event).
-- Set "event" to null.
-
-Return ONLY pure JSON in this exact structure:
-
-{
-  "action": "insert" | "edit" | "delete" | "unknown",
-  "message": "short explanation for the user",
-  "eventId": "..." | null,
-  "event": { ... } | null
-}
-
-User request: ${message}
-`;
+    const prompt = buildCalendarAgentPrompt({
+      userMessage: message,
+      timezone,
+      todayDate,
+      eventsForContext,
+      lastEventId,
+      lastEventSummary,
+      lastEventStart,
+    });
 
     const resLLM = await fetch("http://localhost:8000/chat", {
       method: "POST",

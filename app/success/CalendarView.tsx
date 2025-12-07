@@ -155,7 +155,7 @@ export default function CalendarView({ events }: Props) {
               </button>
             )}
 
-            <button
+            {/* <button
               type="button"
               onClick={handleReschedule}
               className="inline-flex items-center px-2 py-1 rounded-md text-xs bg-indigo-600 hover:bg-indigo-700 text-white"
@@ -169,7 +169,7 @@ export default function CalendarView({ events }: Props) {
               className="inline-flex items-center px-2 py-1 rounded-md text-xs bg-red-500 hover:bg-red-600 text-white"
             >
               Delete
-            </button>
+            </button> */}
           </div>
 
          
