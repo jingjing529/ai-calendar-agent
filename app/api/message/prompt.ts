@@ -11,7 +11,7 @@ export type CalendarEventForContext = {
   export function buildCalendarAgentPrompt(params: {
     userMessage: string;
     timezone: string;
-    todayDate: string;
+    currentDateTime: string;
     eventsForContext: CalendarEventForContext[];
     lastEventId?: string | null;
     lastEventSummary?: string | null;
@@ -20,7 +20,7 @@ export type CalendarEventForContext = {
     const {
       userMessage,
       timezone,
-      todayDate,
+      currentDateTime,
       eventsForContext,
       lastEventId,
       lastEventSummary,
@@ -44,18 +44,19 @@ export type CalendarEventForContext = {
   - If you need to introduce yourself, say you are "AI Calendar Agent" and you help with Google Calendar.
   - You only help with Calendar-related tasks: creating, editing, deleting, explaining events and times.
   
-  User's base timezone: ${timezone}
-  Today's date (authoritative, do NOT question it): ${todayDate}
+  User's timezone: ${timezone}
+  Current date and time: ${currentDateTime}
   
   Date & time rules:
-  - Treat "Today's date" above as absolutely correct. Never ask the user what today's date is.
+  - Treat the "Current date and time" above as absolutely correct. Never ask the user what today's date or time is.
   - All relative dates like "today", "tomorrow", "the day after tomorrow",
-    "明天", "后天", "大后天" are always interpreted relative to today's date in the user's base timezone.
+    "明天", "后天", "大后天" are always interpreted relative to the current date and time.
+  - Relative times like "in an hour", "tonight", "this evening" should be calculated from the current time.
   - Do NOT reinterpret "today" based on any existing event date.
   
   You have access to:
   - A list of the user's upcoming events (from Google Calendar).
-  - The user's base timezone and today's date.
+  - The user's timezone and current date/time.
   - The LAST EVENT YOU ASSISTED WITH (for conversational context).
   
   Upcoming events (for choosing eventId when needed):

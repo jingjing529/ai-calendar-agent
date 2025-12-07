@@ -8,33 +8,43 @@ interface Message {
   event?: any;
   action?: "insert" | "edit" | "delete";
   eventId?: string;
+  timestamp?: Date;
 }
 
 interface ChatProps {
   onEventUpdated?: () => void;
 }
 
+// Quick action suggestions
+const QUICK_ACTIONS = [
+  "📅 Schedule a meeting tomorrow",
+  "🗑️ Delete my next event",
+  "✏️ Reschedule my 3pm meeting",
+];
+
 export default function Chat({ onEventUpdated }: ChatProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isThinking, setIsThinking] = useState(false);
-  const [streamingText, setStreamingText] = useState(""); // ⭐ 正在流式输出的这条助手消息
+  const [isExecuting, setIsExecuting] = useState(false);
+  const [streamingText, setStreamingText] = useState("");
   const chatEndRef = useRef<HTMLDivElement | null>(null);
 
-  // 初始化一条欢迎消息
+  // 初始化欢迎消息
   useEffect(() => {
     const intro: Message = {
       role: "assistant",
-      text: "👋 Hi! I'm your smart Calendar Assistant.\n\nI can create, update, or delete Google Calendar events for you automatically.\nJust tell me what you'd like to do!",
+      text: "Hi! I'm your AI Calendar Assistant. I can help you manage your Google Calendar with natural language.\n\nTry saying things like:\n• \"Schedule a meeting tomorrow at 2pm\"\n• \"What's on my calendar this week?\"\n• \"Move my 3pm meeting to 4pm\"",
+      timestamp: new Date(),
     };
-
     setMessages([intro]);
   }, []);
 
   const clearChat = () => {
     const intro: Message = {
       role: "assistant",
-      text: "👋 Hi! I'm your smart Calendar Assistant.\n\nI can create, update, or delete Google Calendar events for you automatically.\nJust tell me what you'd like to do!",
+      text: "Hi! I'm your AI Calendar Assistant. I can help you manage your Google Calendar with natural language.\n\nTry saying things like:\n• \"Schedule a meeting tomorrow at 2pm\"\n• \"What's on my calendar this week?\"\n• \"Move my 3pm meeting to 4pm\"",
+      timestamp: new Date(),
     };
     setMessages([intro]);
     setStreamingText("");
@@ -56,7 +66,7 @@ export default function Chat({ onEventUpdated }: ChatProps) {
       const timezone =
         Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
 
-      const res = await fetch("/api/message/stream", {
+      const res = await fetch("/api/message", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ message: userMessage, timezone }),
@@ -115,6 +125,7 @@ export default function Chat({ onEventUpdated }: ChatProps) {
       const assistantMessage: Message = {
         role: "assistant",
         text: messageText,
+        timestamp: new Date(),
         ...(action && { action }),
         ...(event && { event }),
         ...(eventId && { eventId }),
@@ -131,7 +142,7 @@ export default function Chat({ onEventUpdated }: ChatProps) {
       console.error(err);
       setMessages((prev) => [
         ...prev,
-        { role: "assistant", text: "Error: Could not get a response." },
+        { role: "assistant", text: "Sorry, I encountered an error. Please try again.", timestamp: new Date() },
       ]);
       setStreamingText("");
     } finally {
@@ -142,6 +153,7 @@ export default function Chat({ onEventUpdated }: ChatProps) {
   const handleEventAction = async (message: Message) => {
     if (!message.action) return;
 
+    setIsExecuting(true);
     try {
       await fetch("/api/calendar", {
         method: "POST",
@@ -160,9 +172,50 @@ export default function Chat({ onEventUpdated }: ChatProps) {
         ...prev,
         {
           role: "assistant",
-          text: `Error performing ${message.action} on calendar.`,
+          text: `Failed to ${message.action} the event. Please try again.`,
+          timestamp: new Date(),
         },
       ]);
+    } finally {
+      setIsExecuting(false);
+    }
+  };
+
+  const handleQuickAction = (action: string) => {
+    setInput(action.replace(/^[^\s]+\s/, "")); // Remove emoji prefix
+  };
+
+  const getActionIcon = (action?: string) => {
+    switch (action) {
+      case "insert":
+        return (
+          <span className="inline-flex items-center gap-1 text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full text-xs font-medium">
+            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            </svg>
+            Created
+          </span>
+        );
+      case "edit":
+        return (
+          <span className="inline-flex items-center gap-1 text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full text-xs font-medium">
+            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+            </svg>
+            Updated
+          </span>
+        );
+      case "delete":
+        return (
+          <span className="inline-flex items-center gap-1 text-red-600 bg-red-50 px-2 py-0.5 rounded-full text-xs font-medium">
+            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+            </svg>
+            Deleted
+          </span>
+        );
+      default:
+        return null;
     }
   };
 
@@ -171,110 +224,146 @@ export default function Chat({ onEventUpdated }: ChatProps) {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, isThinking, streamingText]);
 
-  // small helper to format message text (keeps line breaks)
+  // Format message text with line breaks
   const renderText = (t?: string) =>
-    t ? t.split("\n").map((line, i) => <div key={i}>{line}</div>) : null;
+    t ? t.split("\n").map((line, i) => <div key={i}>{line || <br />}</div>) : null;
+
+  // Format time
+  const formatTime = (date?: Date) => {
+    if (!date) return "";
+    return date.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+  };
 
   return (
-    <div className="flex flex-col w-full max-w-md h-[95vh] bg-white rounded-2xl shadow-xl overflow-hidden">
-      <div className="flex items-center justify-between p-4 border-b">
-        {/* Left side (avatar + title) */}
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-blue-500 to-indigo-500 flex items-center justify-center text-white font-semibold">
-            AI
-          </div>
-          <div>
-            <div className="font-semibold">Calendar Assistant</div>
-            <div className="text-xs text-gray-500">
-              Ask me to create, edit or delete events
+    <div className="flex flex-col w-full max-w-md h-[95vh] bg-gradient-to-b from-slate-50 to-white rounded-2xl shadow-2xl overflow-hidden border border-gray-100">
+      {/* Header */}
+      <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-700 p-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            {/* AI Avatar with pulse animation */}
+            <div className="relative">
+              <div className="w-11 h-11 rounded-xl bg-white/20 backdrop-blur flex items-center justify-center shadow-lg">
+                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+              </div>
+              {/* Online indicator */}
+              <span className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-emerald-400 border-2 border-white rounded-full"></span>
+            </div>
+            <div>
+              <h1 className="font-semibold text-white text-lg">Calendar AI</h1>
+              <p className="text-xs text-indigo-200 flex items-center gap-1">
+                <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse"></span>
+                Online • Ready to help
+              </p>
             </div>
           </div>
-        </div>
 
-        <button
-          className="flex items-center gap-1 px-3 py-1.5 text-sm text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition"
-          onClick={clearChat}
-        >
-          Clear Chat
-        </button>
+          <button
+            className="p-2 text-white/70 hover:text-white hover:bg-white/10 rounded-lg transition-all"
+            onClick={clearChat}
+            title="Clear chat"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+          </button>
+        </div>
       </div>
 
+      {/* Executing indicator */}
+      {isExecuting && (
+        <div className="bg-indigo-50 border-b border-indigo-100 px-4 py-2 flex items-center gap-2 text-indigo-700 text-sm">
+          <div className="w-4 h-4 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
+          Updating your calendar...
+        </div>
+      )}
+
+      {/* Messages Area */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        {/* 已经完成的消息 */}
         {messages.map((m, i) => (
           <div
             key={i}
-            className={`flex ${
-              m.role === "user" ? "justify-end" : "justify-start"
-            }`}
+            className={`flex ${m.role === "user" ? "justify-end" : "justify-start"} animate-in fade-in-0 slide-in-from-bottom-2 duration-300`}
           >
             {m.role === "assistant" && (
-              <div className="mr-3 flex-shrink-0">
-                <div className="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center text-gray-700 font-medium">
-                  A
+              <div className="mr-2 shrink-0">
+                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-md">
+                  <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                  </svg>
                 </div>
               </div>
             )}
 
-            <div
-              className={`max-w-[78%] break-words ${
-                m.role === "user"
-                  ? "bg-blue-500 text-white rounded-2xl rounded-br-none px-4 py-2 shadow"
-                  : "bg-gray-100 text-gray-900 rounded-2xl rounded-bl-none px-4 py-2 shadow-sm"
-              }`}
-            >
-              <div className="whitespace-pre-wrap text-sm">
-                {renderText(m.text)}
-              </div>
-              {m.action && (
-                <div className="text-xs mt-2 text-gray-500">
-                  <span className="font-medium capitalize">{m.action}</span>
-                  {m.eventId ? ` — id: ${m.eventId}` : ""}
+            <div className={`max-w-[80%] ${m.role === "user" ? "order-1" : ""}`}>
+              <div
+                className={`break-words ${
+                  m.role === "user"
+                    ? "bg-gradient-to-br from-indigo-500 to-purple-600 text-white rounded-2xl rounded-br-sm px-4 py-3 shadow-md"
+                    : "bg-white text-gray-800 rounded-2xl rounded-bl-sm px-4 py-3 shadow-md border border-gray-100"
+                }`}
+              >
+                <div className="whitespace-pre-wrap text-sm leading-relaxed">
+                  {renderText(m.text)}
                 </div>
-              )}
+                {m.action && (
+                  <div className="mt-2 pt-2 border-t border-gray-100/50">
+                    {getActionIcon(m.action)}
+                  </div>
+                )}
+              </div>
+              {/* Timestamp */}
+              <div className={`text-[10px] text-gray-400 mt-1 ${m.role === "user" ? "text-right" : "text-left"}`}>
+                {formatTime(m.timestamp)}
+              </div>
             </div>
 
             {m.role === "user" && (
-              <div className="ml-3 flex-shrink-0">
-                <div className="w-9 h-9 rounded-full bg-blue-500 flex items-center justify-center text-white font-medium">
-                  U
+              <div className="ml-2 shrink-0 order-2">
+                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-gray-700 to-gray-900 flex items-center justify-center shadow-md">
+                  <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                  </svg>
                 </div>
               </div>
             )}
           </div>
         ))}
 
-        {/* ⭐ 正在流式输出的这条 assistant 消息 */}
+        {/* Streaming message */}
         {streamingText && (
-          <div className="flex justify-start">
-            <div className="mr-3 flex-shrink-0">
-              <div className="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center text-gray-700 font-medium">
-                A
+          <div className="flex justify-start animate-in fade-in-0 slide-in-from-bottom-2 duration-300">
+            <div className="mr-2 shrink-0">
+              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-md">
+                <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                </svg>
               </div>
             </div>
-
-            <div className="bg-gray-100 text-gray-900 rounded-2xl rounded-bl-none px-4 py-2 shadow-sm">
-              <div className="whitespace-pre-wrap text-sm">
+            <div className="bg-white text-gray-800 rounded-2xl rounded-bl-sm px-4 py-3 shadow-md border border-gray-100 max-w-[80%]">
+              <div className="whitespace-pre-wrap text-sm leading-relaxed">
                 {renderText(streamingText)}
               </div>
             </div>
           </div>
         )}
 
-        {/* 打字中指示器：只在 isThinking 且还没有 streamingText 时出现 */}
+        {/* Thinking indicator */}
         {isThinking && !streamingText && (
-          <div className="flex justify-start">
-            <div className="mr-3 flex-shrink-0">
-              <div className="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center text-gray-700 font-medium">
-                A
+          <div className="flex justify-start animate-in fade-in-0 slide-in-from-bottom-2 duration-300">
+            <div className="mr-2 shrink-0">
+              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-md">
+                <svg className="w-4 h-4 text-white animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                </svg>
               </div>
             </div>
-
-            <div className="bg-gray-100 text-gray-900 rounded-2xl rounded-bl-none px-4 py-2 shadow-sm flex items-center">
-              <div className="typing-dots flex items-center gap-1">
-                <span className="dot" />
-                <span className="dot" />
-                <span className="dot" />
+            <div className="bg-white text-gray-800 rounded-2xl rounded-bl-sm px-4 py-3 shadow-md border border-gray-100">
+              <div className="flex items-center gap-1.5">
+                <div className="w-2 h-2 bg-indigo-500 rounded-full animate-bounce" style={{ animationDelay: "0ms" }}></div>
+                <div className="w-2 h-2 bg-indigo-500 rounded-full animate-bounce" style={{ animationDelay: "150ms" }}></div>
+                <div className="w-2 h-2 bg-indigo-500 rounded-full animate-bounce" style={{ animationDelay: "300ms" }}></div>
               </div>
             </div>
           </div>
@@ -283,69 +372,63 @@ export default function Chat({ onEventUpdated }: ChatProps) {
         <div ref={chatEndRef} />
       </div>
 
-      <div className="p-3 border-t flex items-center gap-2">
-        <textarea
-          className="flex-1 border border-gray-200 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-300 resize-y min-h-[40px] max-h-[150px]"
-          placeholder="Try: 'Schedule meeting tomorrow at 10am with Alice'"
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          onKeyDown={(e) =>
-            e.key === "Enter" &&
-            !e.shiftKey &&
-            (e.preventDefault(), sendMessage())
-          }
-          aria-label="Message"
-        />
+      {/* Quick Actions - show only when no messages beyond intro */}
+      {messages.length === 1 && !isThinking && (
+        <div className="px-4 pb-2">
+          <p className="text-xs text-gray-500 mb-2">Quick actions:</p>
+          <div className="flex flex-wrap gap-2">
+            {QUICK_ACTIONS.map((action, i) => (
+              <button
+                key={i}
+                onClick={() => handleQuickAction(action)}
+                className="text-xs px-3 py-1.5 bg-gray-100 hover:bg-indigo-100 hover:text-indigo-700 text-gray-600 rounded-full transition-colors"
+              >
+                {action}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
-        <button
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition"
-          onClick={sendMessage}
-          aria-label="Send"
-        >
-          Send
-        </button>
+      {/* Input Area */}
+      <div className="p-3 border-t border-gray-100 bg-white">
+        <div className="flex items-end gap-2">
+          <div className="flex-1 relative">
+            <textarea
+              className="w-full border border-gray-200 rounded-xl px-4 py-3 pr-12 focus:outline-none focus:ring-2 focus:ring-indigo-300 focus:border-transparent resize-none text-sm bg-gray-50 placeholder-gray-400 transition-all"
+              placeholder="Ask me anything about your calendar..."
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={(e) =>
+                e.key === "Enter" &&
+                !e.shiftKey &&
+                (e.preventDefault(), sendMessage())
+              }
+              rows={1}
+              style={{ minHeight: "48px", maxHeight: "120px" }}
+              aria-label="Message"
+            />
+          </div>
+
+          <button
+            className={`shrink-0 w-12 h-12 rounded-xl flex items-center justify-center transition-all duration-200 ${
+              input.trim()
+                ? "bg-gradient-to-br from-indigo-500 to-purple-600 text-white shadow-lg hover:shadow-xl hover:scale-105"
+                : "bg-gray-100 text-gray-400"
+            }`}
+            onClick={sendMessage}
+            disabled={!input.trim() || isThinking}
+            aria-label="Send"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+            </svg>
+          </button>
+        </div>
+        <p className="text-[10px] text-gray-400 mt-2 text-center">
+          Press Enter to send • Shift+Enter for new line
+        </p>
       </div>
-
-      {/* scoped styles for typing animation */}
-      <style jsx>{`
-        .typing-dots .dot {
-          width: 8px;
-          height: 8px;
-          background: #374151; /* gray-700 */
-          border-radius: 50%;
-          display: inline-block;
-          opacity: 0.25;
-          transform: translateY(0);
-          animation: blink 1s infinite;
-        }
-        .typing-dots .dot:nth-child(1) {
-          animation-delay: 0s;
-        }
-        .typing-dots .dot:nth-child(2) {
-          animation-delay: 0.15s;
-        }
-        .typing-dots .dot:nth-child(3) {
-          animation-delay: 0.3s;
-        }
-        @keyframes blink {
-          0% {
-            opacity: 0.25;
-            transform: translateY(0);
-          }
-          30% {
-            opacity: 1;
-            transform: translateY(-4px);
-          }
-          60% {
-            opacity: 0.5;
-            transform: translateY(0);
-          }
-          100% {
-            opacity: 0.25;
-            transform: translateY(0);
-          }
-        }
-      `}</style>
     </div>
   );
 }

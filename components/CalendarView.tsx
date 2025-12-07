@@ -44,14 +44,12 @@ export default function CalendarView({ events }: Props) {
 
   const handleDelete = () => {
     if (!tooltip?.eventId) return;
-    // TODO: 这里之后接你自己的删除接口
     console.log("Delete event:", tooltip.eventId);
     alert(`(示例) 删除事件：${tooltip.title}`);
   };
 
   const handleReschedule = () => {
     if (!tooltip?.eventId) return;
-    // TODO: 这里之后接你自己的改时间逻辑
     console.log("Reschedule event:", tooltip.eventId);
     alert(`(示例) Reschedule 事件：${tooltip.title}`);
   };
@@ -85,7 +83,7 @@ export default function CalendarView({ events }: Props) {
             eventRect.width / 2 -
             containerRect.left;
           const top =
-            eventRect.top - containerRect.top - 10; // 在 event 上方一点
+            eventRect.top - containerRect.top - 10; 
 
           setTooltip({
             left,
@@ -100,13 +98,10 @@ export default function CalendarView({ events }: Props) {
 
           (info.el as HTMLElement).style.cursor = "pointer";
         }}
-        // 不在这里立即清空 tooltip，避免移到 tooltip 上就消失
         eventMouseLeave={() => {
-          // 交给 tooltip 自己的 onMouseLeave 处理
         }}
       />
 
-      {/* 悬浮小卡片（tooltip） */}
       {tooltip && (
         <div
           className="
@@ -139,7 +134,7 @@ export default function CalendarView({ events }: Props) {
               {tooltip.description}
             </div>
           ) : (
-            <div className="text-xs text-gray-400 mb-2">没有描述内容。</div>
+            <div className="text-xs text-gray-400 mb-2">...</div>
           )}
 
           {/* 三个按钮区域 */}

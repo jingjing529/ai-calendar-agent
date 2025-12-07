@@ -37,28 +37,8 @@ console.log("🔥 Zypher Agent initialized.");
 Deno.serve(async (req) => {
   const url = new URL(req.url);
 
-  // 1️⃣ 保留原来的非流式 /chat（给 planner 用）
-  if (req.method === "POST" && url.pathname === "/chat") {
-    const { message } = await req.json();
-
-    const event$ = agent.runTask(message, "claude-sonnet-4-20250514");
-
-    let fullText = "";
-
-    for await (const event of eachValueFrom(event$)) {
-      // ✅ 累积所有 text 事件的内容，得到完整回复
-      if (event.type === "text") {
-        fullText += event.content;
-      }
-    }
-
-    return new Response(JSON.stringify({ reply: fullText }), {
-      headers: { "Content-Type": "application/json" },
-    });
-  }
-
   // 2️⃣ 新增真正流式的 /chat-stream
-  if (req.method === "POST" && url.pathname === "/chat-stream") {
+  if (req.method === "POST" && url.pathname === "/chat") {
     const { message } = await req.json();
 
     const event$ = agent.runTask(message, "claude-sonnet-4-20250514");
@@ -94,4 +74,4 @@ Deno.serve(async (req) => {
   return new Response("Not found", { status: 404 });
 });
 
-console.log("🌐 Zypher API running at http://localhost:8000/chat & /chat-stream …");
+console.log("🌐 Zypher API running at http://localhost:8000/chat…");

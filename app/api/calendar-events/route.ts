@@ -10,7 +10,7 @@ type GoogleCalendarEvent = {
   description?: string;
   start?: { dateTime?: string; date?: string };
   end?: { dateTime?: string; date?: string };
-  htmlLink?: string;
+  htmlLink ?: string;
 };
 
 export async function GET(req: NextRequest) {
