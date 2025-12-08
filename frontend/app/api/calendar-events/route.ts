@@ -1,4 +1,3 @@
-// app/api/calendar-events/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 

@@ -71,4 +71,3 @@ Deno.serve(async (req) => {
   return new Response("Not found", { status: 404 });
 });
 
-console.log("🌐 Zypher API running at http://localhost:8000/chat…");

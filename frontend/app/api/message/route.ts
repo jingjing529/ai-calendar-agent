@@ -85,7 +85,6 @@ export async function POST(req: NextRequest) {
     });
     const base = process.env.NEXT_PUBLIC_API_BASE_URL;
 
-    // 调 Deno 后端的流式接口
     const upstreamRes = await fetch(`${base}/chat`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -113,40 +112,31 @@ export async function POST(req: NextRequest) {
             const chunk = decoder.decode(value, { stream: true });
             buffer += chunk;
 
-            // 检查是否包含分隔符
             const separatorIndex = buffer.indexOf(JSON_META_SEPARATOR);
 
             if (separatorIndex !== -1) {
-              // 发送分隔符之前的 message 部分（立即发送，不等待）
               if (!metaStarted) {
                 const messagePart = buffer.slice(0, separatorIndex);
                 if (messagePart) {
-                  // 立即发送所有内容，实现快速流式输出
                   controller.enqueue(encoder.encode(messagePart));
                 }
                 metaStarted = true;
-                // 移除已发送的部分和分隔符
                 buffer = buffer.slice(separatorIndex + JSON_META_SEPARATOR.length);
               }
             } else if (!metaStarted) {
-              // 还没遇到分隔符，立即发送所有新内容（不缓冲）
-              // 这样可以实现类似 GPT 的快速流式输出
               if (buffer.length > 0) {
                 controller.enqueue(encoder.encode(buffer));
-                buffer = ""; // 清空 buffer，立即转发
+                buffer = ""; 
               }
             }
           }
 
-          // 流结束，发送剩余的 message 部分（如果还没遇到分隔符）
           if (!metaStarted && buffer.trim()) {
             controller.enqueue(encoder.encode(buffer.trim()));
           }
 
-          // 如果有 JSON metadata，用特殊标记发送给前端
           if (metaStarted && buffer.trim()) {
             const jsonMeta = buffer.trim();
-            // 发送 metadata（不需要逐字符，因为前端不会显示）
             controller.enqueue(encoder.encode(`\n${JSON_META_SEPARATOR}\n${jsonMeta}`));
           }
         } catch (err) {
