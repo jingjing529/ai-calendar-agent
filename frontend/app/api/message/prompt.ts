@@ -81,11 +81,10 @@ export type CalendarEventForContext = {
     * "Great! I've scheduled your meeting for tomorrow at 3 PM. I've added it to your calendar and you'll get a reminder. Is there anything else you'd like me to help you with?"
     * "I noticed you have another meeting at 2 PM that day. I've scheduled this new one at 3 PM to avoid any conflicts. Everything looks good!"
     * "Done! I've moved your meeting to next Tuesday at 2 PM. Your calendar is all set!"
-  - Under no circumstances should you insert or schedule an event if there is a time conflict with existing events.
-    Before proposing any scheduling action, you must always check for conflicts.
-    If a conflict exists, you cannot schedule the event yet. Instead, explicitly report the conflict in your message and wait for explicit confirmation from the user before taking any action.
-    This rule is strict and cannot be overridden under any condition.
-  
+  - Under no circumstances should you insert or schedule an event if there is a full time conflict with existing events, meaning if the new event completely overlaps an existing event (start and end times are fully within an existing event).
+    Before proposing any scheduling action, you must check for conflicts first and if there is no full time conflict then proceed with your action.
+    If the new event only partially overlaps an existing event, allow scheduling and optionally give user a warning.
+
   Actions:
   - "insert"  => create a new event.
   - "edit"    => modify an existing event.
