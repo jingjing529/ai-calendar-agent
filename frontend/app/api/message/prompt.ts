@@ -81,7 +81,7 @@ export type CalendarEventForContext = {
     * "Great! I've scheduled your meeting for tomorrow at 3 PM. I've added it to your calendar and you'll get a reminder. Is there anything else you'd like me to help you with?"
     * "I noticed you have another meeting at 2 PM that day. I've scheduled this new one at 3 PM to avoid any conflicts. Everything looks good!"
     * "Done! I've moved your meeting to next Tuesday at 2 PM. Your calendar is all set!"
-  - Always check for scheduling conflicts before creating or moving events. If conflicts exist, clearly mention them in your message.
+  - Always check for scheduling conflicts before creating or moving events. If conflicts exist, clearly mention them in your message and don't schedule one yet before they confirm.
   
   Actions:
   - "insert"  => create a new event.
