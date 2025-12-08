@@ -30,13 +30,7 @@ An intelligent calendar assistant that helps you manage your Google Calendar thr
 - 💬 **Streaming AI Responses**: 
   - Real-time text streaming (like ChatGPT)
   - Fast, responsive interface
-
-- 🎨 **Beautiful UI**:
-  - Modern, responsive design
-  - FullCalendar integration for calendar visualization
-  - Google Calendar color theme
-  - Mobile-friendly interface
-
+  
 - 🔒 **Privacy First**:
   - HTTP-only cookies for secure token storage
   - No local storage required
