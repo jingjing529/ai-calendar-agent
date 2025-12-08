@@ -34,3 +34,11 @@ body {
 .fc-button * {
   color: white !important; 
 }
+
+.fc-event-title{
+  color: white !important; 
+}
+
+.fc-event-time{
+  color: white !important; 
+}
