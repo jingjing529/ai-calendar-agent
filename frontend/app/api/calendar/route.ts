@@ -26,7 +26,6 @@ export async function POST(req: NextRequest) {
 
     const calendar = google.calendar({ version: "v3", auth: oAuth2Client });
 
-    // ---------- INSERT ----------
     if (action === "insert") {
       if (!event) {
         return NextResponse.json(
@@ -57,7 +56,6 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    // ---------- EDIT ----------
     if (action === "edit") {
       if (!eventId) {
         return NextResponse.json(
@@ -72,7 +70,6 @@ export async function POST(req: NextRequest) {
         );
       }
 
-      // 用 patch 允许只传需要修改的字段
       const res = await calendar.events.patch({
         calendarId: "primary",
         eventId,
@@ -96,7 +93,6 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    // ---------- DELETE ----------
     if (action === "delete") {
       if (!eventId) {
         return NextResponse.json(

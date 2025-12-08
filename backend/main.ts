@@ -37,7 +37,6 @@ console.log("🔥 Zypher Agent initialized.");
 Deno.serve(async (req) => {
   const url = new URL(req.url);
 
-  // 2️⃣ 新增真正流式的 /chat-stream
   if (req.method === "POST" && url.pathname === "/chat") {
     const { message } = await req.json();
 
@@ -49,10 +48,8 @@ Deno.serve(async (req) => {
         try {
           for await (const event of eachValueFrom(event$)) {
             if (event.type === "text") {
-              // 👇 每次有增量 text，就直接往 HTTP 响应里写一段
               controller.enqueue(encoder.encode(event.content));
             }
-            // 你也可以在这里根据需要处理其他类型，例如 tool use 等
           }
         } catch (err) {
           console.error("streaming error:", err);

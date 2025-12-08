@@ -7,27 +7,21 @@ export default function TokenExpiredModal() {
   const router = useRouter();
 
   const handleLogout = async () => {
-    // Clear cookies via API and redirect to home
     await fetch("/api/logout", { method: "POST" });
     router.push("/");
   };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      {/* Backdrop with blur */}
       <div className="absolute inset-0 bg-black/60 backdrop-blur-md"></div>
       
-      {/* Modal */}
       <div className="relative bg-white rounded-3xl shadow-2xl p-8 md:p-10 max-w-lg w-full">
-        {/* Decorative gradient background */}
         <div 
           className="absolute top-0 left-0 right-0 h-32 rounded-t-3xl opacity-10"
           style={{ background: 'linear-gradient(135deg, #4285F4 0%, #34A853 100%)' }}
         ></div>
 
-        {/* Content */}
         <div className="relative">
-          {/* AI Avatar */}
           <div className="flex justify-center mb-6">
             <div className="relative">
               <div className="absolute inset-0 bg-gradient-to-br from-[#4285F4] to-[#34A853] rounded-full blur-xl opacity-30 animate-pulse"></div>
@@ -44,19 +38,15 @@ export default function TokenExpiredModal() {
             </div>
           </div>
 
-          {/* Title */}
           <h2 className="text-2xl md:text-3xl font-bold text-gray-900 text-center mb-3">
             Session Expired
           </h2>
 
-          {/* Message */}
           <p className="text-gray-600 text-center mb-8 leading-relaxed text-base">
             Hey! Your session has expired. No worries — just log in again to continue managing your calendar with Cal-E.
           </p>
 
-          {/* Buttons */}
           <div className="flex flex-col sm:flex-row gap-3">
-            {/* Re-login Button */}
             <a
               href="/api/auth/google"
               className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl px-6 py-3.5 text-white font-semibold transition-all duration-300 hover:scale-105 hover:shadow-xl"
@@ -72,8 +62,7 @@ export default function TokenExpiredModal() {
               </svg>
               Re-login
             </a>
-
-            {/* Logout Button */}
+              
             <button
               onClick={handleLogout}
               className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl px-6 py-3.5 bg-gray-100 text-gray-700 font-semibold transition-all duration-300 hover:bg-gray-200 hover:scale-105 border border-gray-200"

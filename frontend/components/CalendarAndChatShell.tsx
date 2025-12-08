@@ -1,4 +1,3 @@
-// components/CalendarAndChatShell.tsx
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
@@ -41,7 +40,6 @@ export default function CalendarAndChatShell() {
 
   return (
     <>
-      {/* Mobile Tab Switcher - only visible on small screens */}
       <div className="lg:hidden flex gap-2 mb-4">
         <button
           onClick={() => setActiveTab("chat")}
@@ -71,14 +69,11 @@ export default function CalendarAndChatShell() {
         </button>
       </div>
 
-      {/* Desktop Layout */}
       <div className="hidden lg:grid lg:grid-cols-[420px_1fr] gap-6 h-[calc(100vh-180px)]">
-        {/* Left: Chat */}
         <div className="h-full">
           <Chat onEventUpdated={reloadEvents} />
         </div>
 
-        {/* Right: Calendar */}
         <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-6 h-full overflow-hidden">
           {loading ? (
             <div className="h-full flex items-center justify-center">
@@ -93,20 +88,17 @@ export default function CalendarAndChatShell() {
         </div>
       </div>
 
-      {/* Mobile Layout */}
       <div className="lg:hidden">
-        {/* Chat View */}
         <div className={`${activeTab === "chat" ? "flex" : "hidden"} justify-center items-start`}>
           <Chat onEventUpdated={reloadEvents} />
         </div>
 
-        {/* Calendar View */}
         <div className={`${activeTab === "calendar" ? "block" : "hidden"}`}>
           <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-4">
             {loading ? (
               <div className="h-[60vh] flex items-center justify-center">
                 <div className="flex flex-col items-center gap-3">
-                  <div className="w-8 h-8 border-3 border-[#EA4335] border-t-transparent rounded-full animate-spin"></div>
+                  <div className="w-8 h-8 border-3 border-t-transparent rounded-full animate-spin"></div>
                   <span className="text-gray-500 text-sm">Loading calendar...</span>
                 </div>
               </div>

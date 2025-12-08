@@ -1,4 +1,3 @@
-// app/success/CalendarView.tsx
 "use client";
 
 import { useRef, useState } from "react";
@@ -76,29 +75,23 @@ export default function CalendarView({ events }: Props) {
           const eventRect = info.el.getBoundingClientRect();
           const ext = info.event.extendedProps as any;
 
-          // Calculate tooltip position relative to container
           const eventCenterX = eventRect.left + eventRect.width / 2 - containerRect.left;
           const eventTop = eventRect.top - containerRect.top;
           
-          // Estimate tooltip dimensions (will be adjusted after render)
-          const tooltipWidth = 280; // approximate width
-          const tooltipHeight = 150; // approximate height
+          const tooltipWidth = 280; 
+          const tooltipHeight = 150; 
           const padding = 10;
 
-          // Calculate optimal position
           let left = eventCenterX;
           let top = eventTop - padding;
           
-          // Adjust if tooltip would go off the right edge
           if (left + tooltipWidth / 2 > containerRect.width) {
             left = containerRect.width - tooltipWidth / 2 - padding;
           }
-          // Adjust if tooltip would go off the left edge
           if (left - tooltipWidth / 2 < padding) {
             left = tooltipWidth / 2 + padding;
           }
           
-          // Adjust if tooltip would go off the top
           if (top - tooltipHeight < 0) {
             top = eventRect.bottom - containerRect.top + padding;
           }
@@ -139,27 +132,24 @@ export default function CalendarView({ events }: Props) {
             top: tooltip.top,
             transform: "translate(-50%, -100%)",
           }}
-          // 鼠标离开 tooltip 区域时才关闭
           onMouseLeave={() => setTooltip(null)}
-          onMouseEnter={() => {}} // 进入时不做事，保证不闪
+          onMouseEnter={() => {}}
         >
-          <div className="font-semibold mb-2 break-words">{tooltip.title}</div>
+          <div className="font-semibold mb-2 ">{tooltip.title}</div>
 
           <div className="text-xs text-gray-500 mb-2">
             {formatEventTime(tooltip.start, tooltip.end)}
           </div>
 
           {tooltip.description ? (
-            <div className="text-xs text-gray-700 whitespace-pre-wrap break-words mb-3 max-h-32 overflow-y-auto">
+            <div className="text-xs text-gray-700 whitespace-pre-wrap mb-3 max-h-32 overflow-y-auto">
               {tooltip.description}
             </div>
           ) : (
             <div className="text-xs text-gray-400 mb-3">No description</div>
           )}
 
-          {/* 三个按钮区域 */}
           <div className="mt-1 flex gap-2 justify-end">
-            {/* Edit in app: 实际上是打开 Google Calendar */}
             {tooltip.htmlLink && (
               <button
                 type="button"

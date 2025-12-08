@@ -14,16 +14,13 @@ export default function HomePage() {
         <div className="absolute bottom-1/3 right-1/4 w-64 h-64 bg-[#34A853] rounded-full mix-blend-multiply filter blur-3xl opacity-15 animate-pulse" style={{ animationDelay: "1.5s" }}></div>
       </div> */}
 
-      {/* Decorative grid pattern */}
       <div className="absolute inset-0 opacity-[0.02]" style={{
         backgroundImage: `linear-gradient(#4285F4 1px, transparent 1px), linear-gradient(90deg, #4285F4 1px, transparent 1px)`,
         backgroundSize: '60px 60px'
       }}></div>
 
       <div className="relative z-10 flex flex-col lg:flex-row items-center justify-center gap-8 lg:gap-16 px-6 py-12 max-w-6xl mx-auto">
-        {/* Left side - AI Agent Image */}
         <div className="relative flex-shrink-0">
-          {/* Decorative ring behind image */}
           <div className="absolute inset-0 -m-4 rounded-full bg-gradient-to-br from-[#4285F4] via-[#FBBC04] to-[#EA4335] opacity-20 blur-2xl"></div>
           <div className="relative">
             <Image
@@ -37,12 +34,9 @@ export default function HomePage() {
           </div>
         </div>
 
-        {/* Right side - Text and CTA */}
         <div className="flex flex-col items-center lg:items-start text-center lg:text-left max-w-lg">
-          {/* Greeting */}
           <p className="text-gray-500 text-lg mb-2">Hey there! I&apos;m</p>
           
-          {/* Gradient handwriting title */}
           <h1 className="mb-6 flex flex-col md:flex-row md:items-baseline md:gap-3">
             <span 
               className="text-5xl md:text-6xl font-bold font-mono tracking-tight"
@@ -60,7 +54,6 @@ export default function HomePage() {
             </span>
           </h1>
 
-          {/* AI voice subtitle */}
           <p className="text-gray-600 text-lg md:text-xl mb-8 leading-relaxed">
             I can help you <span className="text-[#4285F4] font-medium">schedule meetings</span>, 
             {" "}<span className="text-[#EA4335] font-medium">set reminders</span>, 
@@ -69,7 +62,6 @@ export default function HomePage() {
             all through a simple chat! ✨
           </p>
 
-          {/* Feature tags */}
           <div className="flex flex-wrap gap-3 mb-8 justify-center lg:justify-start">
             <span className="px-4 py-2 rounded-full text-sm font-medium bg-[#4285F4]/10 text-[#4285F4] border border-[#4285F4]/20">
               Smart Scheduling
@@ -85,7 +77,6 @@ export default function HomePage() {
             </span>
           </div>
 
-          {/* CTA Button */}
           <a
             href="/api/auth/google"
             className="group relative inline-flex items-center justify-center gap-3 rounded-2xl px-8 py-4 font-semibold text-lg transition-all duration-300 hover:scale-105 hover:shadow-xl bg-white text-gray-700 border-2 border-gray-300 hover:border-transparent"
@@ -102,7 +93,6 @@ export default function HomePage() {
             }}
           >
             
-            {/* Google colored G logo */}
             <svg className="w-5 h-5" viewBox="0 0 24 24">
               <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
               <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
@@ -115,14 +105,12 @@ export default function HomePage() {
             </svg>
           </a>
 
-          {/* Trust indicator */}
           <p className="mt-4 text-sm text-gray-400">
             Secure Google OAuth · No password required
           </p>
         </div>
       </div>
 
-      {/* CSS Animation for gradient button */}
       <style jsx>{`
         @keyframes gradient-shift {
           0% { background-position: 0% 50%; }

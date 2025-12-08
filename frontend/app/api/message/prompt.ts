@@ -1,5 +1,3 @@
-// app/api/message/prompt.ts
-
 export type CalendarEventForContext = {
     id: string;
     summary?: string;

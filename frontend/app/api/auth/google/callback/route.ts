@@ -1,4 +1,3 @@
-// app/api/auth/google/callback/route.ts
 import { NextRequest, NextResponse } from "next/server";
 
 const TOKEN_URL = "https://oauth2.googleapis.com/token";
@@ -72,7 +71,6 @@ export async function GET(req: NextRequest) {
 
     console.log("Google OAuth tokens:", tokenData);
 
-    // ✅ 把 access_token 写进 httpOnly cookie（示范用，正式环境建议存数据库+session）
     const res = NextResponse.redirect(new URL("/success", url));
     res.cookies.set("google_access_token", tokenData.access_token, {
       httpOnly: true,
@@ -80,9 +78,6 @@ export async function GET(req: NextRequest) {
       path: "/",
       maxAge: tokenData.expires_in ?? 3600, // 秒
     });
-
-    // refresh_token 也可以存起来，这里先不展开
-    // if (tokenData.refresh_token) { ... }
 
     return res;
   } catch (e) {

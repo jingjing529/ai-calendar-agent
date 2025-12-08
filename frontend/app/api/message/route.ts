@@ -1,4 +1,3 @@
-// app/api/message/stream/route.ts
 import { NextRequest } from "next/server";
 import { cookies } from "next/headers";
 import { buildCalendarAgentPrompt } from "./prompt";
@@ -12,7 +11,6 @@ export async function POST(req: NextRequest) {
     const { message, timezone: clientTimezone } = await req.json();
     const cookieStore = await cookies();
 
-    // 获取 last event cookies
     const lastEventId = cookieStore.get("last_event_id")?.value || null;
     const lastEventSummary = cookieStore.get("last_event_summary")?.value || null;
     const lastEventStart = cookieStore.get("last_event_start")?.value || null;
@@ -22,7 +20,6 @@ export async function POST(req: NextRequest) {
       Intl.DateTimeFormat().resolvedOptions().timeZone ||
       "UTC";
     
-    // 获取用户时区的当前日期时间
     const now = new Date();
     const currentDateTime = now.toLocaleString("en-US", { 
       timeZone: timezone,
@@ -34,9 +31,7 @@ export async function POST(req: NextRequest) {
       minute: "2-digit",
       hour12: true
     });
-    // 例如: "Friday, December 6, 2024 at 7:53 PM"
     
-    // 获取日历事件作为上下文
     const accessToken = cookieStore.get("google_access_token")?.value;
     let eventsForContext: any[] = [];
 
@@ -79,7 +74,6 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // 🔥 使用完整的 prompt 构造
     const prompt = buildCalendarAgentPrompt({
       userMessage: message,
       timezone,

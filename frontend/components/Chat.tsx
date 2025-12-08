@@ -17,9 +17,8 @@ interface ChatProps {
   onEventUpdated?: () => void;
 }
 
-// Quick action suggestions
 const QUICK_ACTIONS = [
-  "📅 Space out 3 hours tomorrow at 2pm for nap",
+  "📅 Schedule a meeting with John Doe tomorrow 2-3pm",
   "🗑️ Delete my next event",
   "✏️ Reschedule my 3pm meeting",
 ];
@@ -34,11 +33,10 @@ export default function Chat({ onEventUpdated }: ChatProps) {
   const [showDisconnectConfirm, setShowDisconnectConfirm] = useState(false);
   const chatEndRef = useRef<HTMLDivElement | null>(null);
 
-  // 初始化欢迎消息
   useEffect(() => {
     const intro: Message = {
       role: "assistant",
-      text: "Hi! I'm your AI Calendar Assistant. I can help you manage your Google Calendar with natural language.\n\nTry saying things like:\n• \"Schedule a meeting tomorrow at 2pm\"\n• \"What's on my calendar this week?\"\n• \"Move my 3pm meeting to 4pm\"",
+      text: "Hi! I'm Cal-E,your AI Calendar Assistant. I can help you manage your Google Calendar with natural language.\n\nTry saying things like:\n• \"Schedule a meeting tomorrow at 2pm\"\n• \"What's on my calendar this week?\"\n• \"Move my 3pm meeting to 4pm\"",
       timestamp: new Date(),
     };
     setMessages([intro]);
@@ -59,7 +57,6 @@ export default function Chat({ onEventUpdated }: ChatProps) {
   };
 
   const confirmDisconnect = async () => {
-    // Remove cookies via API (since they are httpOnly)
     await fetch("/api/logout", { method: "POST" });
     router.push("/");
   };
@@ -75,7 +72,7 @@ export default function Chat({ onEventUpdated }: ChatProps) {
 
     try {
       setIsThinking(true);
-      setStreamingText(""); // 开始新的 assistant 回复
+      setStreamingText(""); 
 
       const timezone =
         Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
@@ -101,7 +98,6 @@ export default function Chat({ onEventUpdated }: ChatProps) {
         const chunk = decoder.decode(value, { stream: true });
         fullText += chunk;
 
-        // ⭐ 检查是否包含 JSON_META_SEPARATOR，只显示 message 部分
         const separatorIndex = fullText.indexOf(JSON_META_SEPARATOR);
         if (separatorIndex !== -1) {
           // 只显示分隔符之前的 message 部分
@@ -135,7 +131,6 @@ export default function Chat({ onEventUpdated }: ChatProps) {
         }
       }
 
-      // 构造完整的 assistant 消息
       const assistantMessage: Message = {
         role: "assistant",
         text: messageText,
@@ -148,7 +143,6 @@ export default function Chat({ onEventUpdated }: ChatProps) {
       setMessages((prev) => [...prev, assistantMessage]);
       setStreamingText("");
 
-      // 如果有日历操作，自动执行
       if (action) {
         await handleEventAction(assistantMessage);
       }
@@ -196,7 +190,7 @@ export default function Chat({ onEventUpdated }: ChatProps) {
   };
 
   const handleQuickAction = (action: string) => {
-    setInput(action.replace(/^[^\s]+\s/, "")); // Remove emoji prefix
+    setInput(action.replace(/^[^\s]+\s/, "")); 
   };
 
   const getActionIcon = (action?: string) => {
@@ -238,11 +232,9 @@ export default function Chat({ onEventUpdated }: ChatProps) {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, isThinking, streamingText]);
 
-  // Format message text with line breaks
   const renderText = (t?: string) =>
     t ? t.split("\n").map((line, i) => <div key={i}>{line || <br />}</div>) : null;
 
-  // Format time
   const formatTime = (date?: Date) => {
     if (!date) return "";
     return date.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
@@ -250,21 +242,18 @@ export default function Chat({ onEventUpdated }: ChatProps) {
 
   return (
     <div className="flex flex-col w-full max-w-md h-[95vh] bg-gradient-to-b from-slate-50 to-white rounded-2xl shadow-2xl overflow-hidden border border-gray-100">
-      {/* Header */}
       <div 
         className="p-4"
         style={{ background: 'linear-gradient(135deg, #4285F4 0%, #34A853 100%)' }}
       >
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            {/* AI Avatar with pulse animation */}
             <div className="relative">
               <div className="w-11 h-11 rounded-xl bg-white/20 backdrop-blur flex items-center justify-center shadow-lg">
                 <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                 </svg>
               </div>
-              {/* Online indicator */}
               <span className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-emerald-400 border-2 border-white rounded-full"></span>
             </div>
             <div>
@@ -299,7 +288,6 @@ export default function Chat({ onEventUpdated }: ChatProps) {
         </div>
       </div>
 
-      {/* Executing indicator */}
       {isExecuting && (
         <div className="bg-[#4285F4]/10 border-b border-[#4285F4]/20 px-4 py-2 flex items-center gap-2 text-[#4285F4] text-sm">
           <div className="w-4 h-4 border-2 border-[#4285F4] border-t-transparent rounded-full animate-spin"></div>
@@ -307,7 +295,6 @@ export default function Chat({ onEventUpdated }: ChatProps) {
         </div>
       )}
 
-      {/* Messages Area */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
         {messages.map((m, i) => (
           <div
@@ -329,7 +316,7 @@ export default function Chat({ onEventUpdated }: ChatProps) {
 
             <div className={`max-w-[80%] ${m.role === "user" ? "order-1" : ""}`}>
               <div
-                className={`break-words ${
+                className={`${
                   m.role === "user"
                     ? "bg-[#4285F4] text-white rounded-2xl rounded-br-sm px-4 py-3 shadow-md"
                     : "bg-white text-gray-800 rounded-2xl rounded-bl-sm px-4 py-3 shadow-md border border-gray-100"
@@ -344,7 +331,6 @@ export default function Chat({ onEventUpdated }: ChatProps) {
                   </div>
                 )}
               </div>
-              {/* Timestamp */}
               <div className={`text-[10px] text-gray-400 mt-1 ${m.role === "user" ? "text-right" : "text-left"}`}>
                 {formatTime(m.timestamp)}
               </div>
@@ -383,7 +369,6 @@ export default function Chat({ onEventUpdated }: ChatProps) {
           </div>
         )}
 
-        {/* Thinking indicator */}
         {isThinking && !streamingText && (
           <div className="flex justify-start animate-in fade-in-0 slide-in-from-bottom-2 duration-300">
             <div className="mr-2 shrink-0">
@@ -409,7 +394,6 @@ export default function Chat({ onEventUpdated }: ChatProps) {
         <div ref={chatEndRef} />
       </div>
 
-      {/* Quick Actions - show only when no messages beyond intro */}
       {messages.length === 1 && !isThinking && (
         <div className="px-4 pb-2">
           <p className="text-xs text-gray-500 mb-2">Quick actions:</p>
@@ -427,7 +411,6 @@ export default function Chat({ onEventUpdated }: ChatProps) {
         </div>
       )}
 
-      {/* Input Area */}
       <div className="p-3 border-t border-gray-100 bg-white">
         <div className="flex items-end gap-2">
           <div className="flex-1 relative">
@@ -467,23 +450,17 @@ export default function Chat({ onEventUpdated }: ChatProps) {
         </p>
       </div>
 
-      {/* Disconnect Confirmation Modal */}
       {showDisconnectConfirm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          {/* Backdrop with blur */}
           <div className="absolute inset-0 bg-black/60 backdrop-blur-md"></div>
           
-          {/* Modal */}
           <div className="relative bg-white rounded-3xl shadow-2xl p-8 md:p-10 max-w-lg w-full">
-            {/* Decorative gradient background */}
             <div 
               className="absolute top-0 left-0 right-0 h-32 rounded-t-3xl opacity-10"
               style={{ background: 'linear-gradient(135deg, #4285F4 0%, #34A853 100%)' }}
             ></div>
 
-            {/* Content */}
             <div className="relative">
-              {/* AI Avatar */}
               <div className="flex justify-center mb-6">
                 <div className="relative">
                   <div className="absolute inset-0 bg-gradient-to-br from-[#4285F4] to-[#34A853] rounded-full blur-xl opacity-30 animate-pulse"></div>
@@ -500,19 +477,15 @@ export default function Chat({ onEventUpdated }: ChatProps) {
                 </div>
               </div>
 
-              {/* Title */}
               <h2 className="text-2xl md:text-3xl font-bold text-gray-900 text-center mb-3">
                 Disconnect?
               </h2>
 
-              {/* Message */}
               <p className="text-gray-600 text-center mb-8 leading-relaxed text-base">
                 Are you sure you want to disconnect? You&apos;ll need to log in again to use Cal-E.
               </p>
 
-              {/* Buttons */}
               <div className="flex flex-col sm:flex-row gap-3">
-                {/* Yes Button */}
                 <button
                   onClick={confirmDisconnect}
                   className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl px-6 py-3.5 text-white font-semibold transition-all duration-300 hover:scale-105 hover:shadow-xl"
@@ -523,7 +496,6 @@ export default function Chat({ onEventUpdated }: ChatProps) {
                   Yes
                 </button>
 
-                {/* No Button */}
                 <button
                   onClick={() => setShowDisconnectConfirm(false)}
                   className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl px-6 py-3.5 bg-gray-100 text-gray-700 font-semibold transition-all duration-300 hover:bg-gray-200 hover:scale-105 border border-gray-200"
