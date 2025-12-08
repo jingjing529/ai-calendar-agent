@@ -146,7 +146,7 @@ export default function CalendarView({ events }: Props) {
             </svg>
           </button>
 
-          <div className="font-semibold mb-2 pr-6">{tooltip.title}</div>
+          <div className="font-semibold mb-2 pr-6 text-black">{tooltip.title}</div>
 
           <div className="text-xs text-gray-500 mb-2">
             {formatEventTime(tooltip.start, tooltip.end)}
