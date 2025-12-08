@@ -1,6 +1,6 @@
 # Cal-E: AI Calendar Agent
 
-An intelligent calendar assistant that helps you manage your Google Calendar through natural language conversations. Built with Next.js, Deno, and Claude AI.
+An intelligent calendar assistant that helps you manage your Google Calendar through natural language conversations. Built with Next.js and Zypher.
 
 ## ✨ Features
 
@@ -224,14 +224,6 @@ npm start
 - Secure flag in production (HTTPS only)
 - OAuth state parameter (prevents CSRF)
 - Server-side token validation
-
-## 🤝 Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
-
-## 📄 License
-
-This project is private and proprietary.
 
 ## 🙏 Acknowledgments
 
