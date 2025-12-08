@@ -45,13 +45,11 @@ export default function CalendarView({ events }: Props) {
   const handleDelete = () => {
     if (!tooltip?.eventId) return;
     console.log("Delete event:", tooltip.eventId);
-    alert(`(示例) 删除事件：${tooltip.title}`);
   };
 
   const handleReschedule = () => {
     if (!tooltip?.eventId) return;
     console.log("Reschedule event:", tooltip.eventId);
-    alert(`(示例) Reschedule 事件：${tooltip.title}`);
   };
   const [refreshKey, setRefreshKey] = useState(0);
 
@@ -62,7 +60,7 @@ export default function CalendarView({ events }: Props) {
     <div ref={containerRef} className="relative">
       <FullCalendar
         plugins={[dayGridPlugin, timeGridPlugin]}
-        initialView="dayGridMonth"
+        initialView="timeGridWeek"
         height="80vh"
         headerToolbar={{
           left: "prev,next today",
@@ -78,12 +76,32 @@ export default function CalendarView({ events }: Props) {
           const eventRect = info.el.getBoundingClientRect();
           const ext = info.event.extendedProps as any;
 
-          const left =
-            eventRect.left +
-            eventRect.width / 2 -
-            containerRect.left;
-          const top =
-            eventRect.top - containerRect.top - 10; 
+          // Calculate tooltip position relative to container
+          const eventCenterX = eventRect.left + eventRect.width / 2 - containerRect.left;
+          const eventTop = eventRect.top - containerRect.top;
+          
+          // Estimate tooltip dimensions (will be adjusted after render)
+          const tooltipWidth = 280; // approximate width
+          const tooltipHeight = 150; // approximate height
+          const padding = 10;
+
+          // Calculate optimal position
+          let left = eventCenterX;
+          let top = eventTop - padding;
+          
+          // Adjust if tooltip would go off the right edge
+          if (left + tooltipWidth / 2 > containerRect.width) {
+            left = containerRect.width - tooltipWidth / 2 - padding;
+          }
+          // Adjust if tooltip would go off the left edge
+          if (left - tooltipWidth / 2 < padding) {
+            left = tooltipWidth / 2 + padding;
+          }
+          
+          // Adjust if tooltip would go off the top
+          if (top - tooltipHeight < 0) {
+            top = eventRect.bottom - containerRect.top + padding;
+          }
 
           setTooltip({
             left,
@@ -110,9 +128,11 @@ export default function CalendarView({ events }: Props) {
             border border-gray-200 
             shadow-lg 
             rounded-lg 
-            px-3 py-2 
+            px-4 py-3 
             text-sm 
-            max-w-xs
+            w-72
+            max-h-64
+            overflow-y-auto
           "
           style={{
             left: tooltip.left,
@@ -123,18 +143,18 @@ export default function CalendarView({ events }: Props) {
           onMouseLeave={() => setTooltip(null)}
           onMouseEnter={() => {}} // 进入时不做事，保证不闪
         >
-          <div className="font-semibold mb-1">{tooltip.title}</div>
+          <div className="font-semibold mb-2 break-words">{tooltip.title}</div>
 
-          <div className="text-xs text-gray-500 mb-1">
+          <div className="text-xs text-gray-500 mb-2">
             {formatEventTime(tooltip.start, tooltip.end)}
           </div>
 
           {tooltip.description ? (
-            <div className="text-xs text-gray-700 whitespace-pre-wrap mb-2">
+            <div className="text-xs text-gray-700 whitespace-pre-wrap break-words mb-3 max-h-32 overflow-y-auto">
               {tooltip.description}
             </div>
           ) : (
-            <div className="text-xs text-gray-400 mb-2">...</div>
+            <div className="text-xs text-gray-400 mb-3">No description</div>
           )}
 
           {/* 三个按钮区域 */}
@@ -153,7 +173,7 @@ export default function CalendarView({ events }: Props) {
             {/* <button
               type="button"
               onClick={handleReschedule}
-              className="inline-flex items-center px-2 py-1 rounded-md text-xs bg-indigo-600 hover:bg-indigo-700 text-white"
+              className="inline-flex items-center px-2 py-1 rounded-md text-xs bg-[#EA4335] hover:bg-[#d33b2c] text-white"
             >
               Reschedule
             </button>

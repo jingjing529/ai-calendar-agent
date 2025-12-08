@@ -70,7 +70,12 @@ export type CalendarEventForContext = {
     assume they refer to the LAST EVENT YOU ASSISTED WITH above.
   - If there is no last event and the user does not specify which event,
     use action: "unknown" and explain clearly in "message" why you cannot proceed.
-  - Your "message" field should be a short, friendly explanation to the user of what you intend to do.
+  - Your "message" field should be warm, friendly, and conversational. Don't just say "I have updated..." or "Done." 
+    Instead, be more caring and detailed. For example:
+    * "Great! I've scheduled your meeting for tomorrow at 3 PM. I've added it to your calendar and you'll get a reminder. Is there anything else you'd like me to help you with?"
+    * "I noticed you have another meeting at 2 PM that day. I've scheduled this new one at 3 PM to avoid any conflicts. Everything looks good!"
+    * "Done! I've moved your meeting to next Tuesday at 2 PM. Your calendar is all set!"
+  - Always check for scheduling conflicts before creating or moving events. If conflicts exist, clearly mention them in your message.
   
   Actions:
   - "insert"  => create a new event.
@@ -82,10 +87,12 @@ export type CalendarEventForContext = {
   - Provide a full Google Calendar event object in "event":
     {
       "summary": "...",
-      "description": "...",
+      "description": "...",  // IMPORTANT: Always provide a description. If the user didn't specify one, create a helpful, friendly description based on the event context.
       "start": { "dateTime": "...", "timeZone": "${timezone}" } or { "date": "YYYY-MM-DD" },
       "end":   { "dateTime": "...", "timeZone": "${timezone}" } or { "date": "YYYY-MM-DD" }
     }
+  - Before creating an event, ALWAYS check the upcoming events list for conflicts (overlapping times).
+  - If you detect a conflict, mention it clearly in your message to the user before proceeding.
   
   For "edit":
   - You MUST provide:
@@ -111,9 +118,14 @@ export type CalendarEventForContext = {
 }
 
 Example output format:
-I'll create a meeting for you tomorrow at 3:00 PM. The event has been scheduled!
+Perfect! I've scheduled your meeting for tomorrow at 3:00 PM. I've added it to your calendar and you'll receive a reminder. I also checked your schedule and there are no conflicts - you're all set! Let me know if you need any adjustments.
 ---JSON_META---
-{"action":"insert","eventId":null,"event":{"summary":"Meeting","start":{"dateTime":"..."},"end":{"dateTime":"..."}}}
+{"action":"insert","eventId":null,"event":{"summary":"Meeting","description":"Meeting scheduled via AI Calendar Agent. Feel free to add more details!","start":{"dateTime":"..."},"end":{"dateTime":"..."}}}
+
+Example with conflict:
+I've scheduled your meeting for tomorrow at 3:00 PM, but I noticed you already have "Team Standup" scheduled at 2:30 PM that day. The meetings might overlap. Would you like me to find a different time, or should I proceed with 3:00 PM?
+---JSON_META---
+{"action":"insert","eventId":null,"event":{"summary":"Meeting","description":"Meeting scheduled via AI Calendar Agent. Note: Potential conflict with existing event.","start":{"dateTime":"..."},"end":{"dateTime":"..."}}}
 
 User request: ${userMessage}
   `.trim();

@@ -47,7 +47,7 @@ export default function CalendarAndChatShell() {
           onClick={() => setActiveTab("chat")}
           className={`flex-1 py-3 px-4 rounded-xl font-medium text-sm transition-all duration-200 flex items-center justify-center gap-2
             ${activeTab === "chat" 
-              ? "bg-indigo-600 text-white shadow-lg shadow-indigo-200" 
+              ? "bg-[#4285F4] text-white shadow-lg shadow-[#4285F4]/20" 
               : "bg-white text-gray-600 border border-gray-200 hover:bg-gray-50"
             }`}
         >
@@ -60,7 +60,7 @@ export default function CalendarAndChatShell() {
           onClick={() => setActiveTab("calendar")}
           className={`flex-1 py-3 px-4 rounded-xl font-medium text-sm transition-all duration-200 flex items-center justify-center gap-2
             ${activeTab === "calendar" 
-              ? "bg-indigo-600 text-white shadow-lg shadow-indigo-200" 
+              ? "bg-[#FBBC04] text-white shadow-lg shadow-[#EA4335]/20" 
               : "bg-white text-gray-600 border border-gray-200 hover:bg-gray-50"
             }`}
         >
@@ -83,7 +83,7 @@ export default function CalendarAndChatShell() {
           {loading ? (
             <div className="h-full flex items-center justify-center">
               <div className="flex flex-col items-center gap-3">
-                <div className="w-8 h-8 border-3 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
+                <div className="w-8 h-8 border-3 border-[#EA4335] border-t-transparent rounded-full animate-spin"></div>
                 <span className="text-gray-500 text-sm">Loading calendar...</span>
               </div>
             </div>
@@ -106,7 +106,7 @@ export default function CalendarAndChatShell() {
             {loading ? (
               <div className="h-[60vh] flex items-center justify-center">
                 <div className="flex flex-col items-center gap-3">
-                  <div className="w-8 h-8 border-3 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
+                  <div className="w-8 h-8 border-3 border-[#EA4335] border-t-transparent rounded-full animate-spin"></div>
                   <span className="text-gray-500 text-sm">Loading calendar...</span>
                 </div>
               </div>

@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import Image from "next/image";
 
 interface Message {
   role: "user" | "assistant";
@@ -17,17 +19,19 @@ interface ChatProps {
 
 // Quick action suggestions
 const QUICK_ACTIONS = [
-  "📅 Schedule a meeting tomorrow",
+  "📅 Space out 3 hours tomorrow at 2pm for nap",
   "🗑️ Delete my next event",
   "✏️ Reschedule my 3pm meeting",
 ];
 
 export default function Chat({ onEventUpdated }: ChatProps) {
+  const router = useRouter();
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isThinking, setIsThinking] = useState(false);
   const [isExecuting, setIsExecuting] = useState(false);
   const [streamingText, setStreamingText] = useState("");
+  const [showDisconnectConfirm, setShowDisconnectConfirm] = useState(false);
   const chatEndRef = useRef<HTMLDivElement | null>(null);
 
   // 初始化欢迎消息
@@ -48,6 +52,16 @@ export default function Chat({ onEventUpdated }: ChatProps) {
     };
     setMessages([intro]);
     setStreamingText("");
+  };
+
+  const handleDisconnect = () => {
+    setShowDisconnectConfirm(true);
+  };
+
+  const confirmDisconnect = async () => {
+    // Remove cookies via API (since they are httpOnly)
+    await fetch("/api/logout", { method: "POST" });
+    router.push("/");
   };
 
   const JSON_META_SEPARATOR = "---JSON_META---";
@@ -237,7 +251,10 @@ export default function Chat({ onEventUpdated }: ChatProps) {
   return (
     <div className="flex flex-col w-full max-w-md h-[95vh] bg-gradient-to-b from-slate-50 to-white rounded-2xl shadow-2xl overflow-hidden border border-gray-100">
       {/* Header */}
-      <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-700 p-4">
+      <div 
+        className="p-4"
+        style={{ background: 'linear-gradient(135deg, #4285F4 0%, #34A853 100%)' }}
+      >
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             {/* AI Avatar with pulse animation */}
@@ -251,30 +268,41 @@ export default function Chat({ onEventUpdated }: ChatProps) {
               <span className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-emerald-400 border-2 border-white rounded-full"></span>
             </div>
             <div>
-              <h1 className="font-semibold text-white text-lg">Calendar AI</h1>
-              <p className="text-xs text-indigo-200 flex items-center gap-1">
+              <h1 className="font-semibold text-white text-lg">Cal-E</h1>
+              <p className="text-xs text-white/80 flex items-center gap-1">
                 <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse"></span>
                 Online • Ready to help
               </p>
             </div>
           </div>
 
-          <button
-            className="p-2 text-white/70 hover:text-white hover:bg-white/10 rounded-lg transition-all"
-            onClick={clearChat}
-            title="Clear chat"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-            </svg>
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              className="p-2 text-white/70 hover:text-white hover:bg-white/10 rounded-lg transition-all"
+              onClick={clearChat}
+              title="Clear chat"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+            </button>
+            <button
+              className="p-2 text-white/70 hover:text-white hover:bg-white/10 rounded-lg transition-all"
+              onClick={handleDisconnect}
+              title="Disconnect"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+              </svg>
+            </button>
+          </div>
         </div>
       </div>
 
       {/* Executing indicator */}
       {isExecuting && (
-        <div className="bg-indigo-50 border-b border-indigo-100 px-4 py-2 flex items-center gap-2 text-indigo-700 text-sm">
-          <div className="w-4 h-4 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
+        <div className="bg-[#4285F4]/10 border-b border-[#4285F4]/20 px-4 py-2 flex items-center gap-2 text-[#4285F4] text-sm">
+          <div className="w-4 h-4 border-2 border-[#4285F4] border-t-transparent rounded-full animate-spin"></div>
           Updating your calendar...
         </div>
       )}
@@ -288,7 +316,10 @@ export default function Chat({ onEventUpdated }: ChatProps) {
           >
             {m.role === "assistant" && (
               <div className="mr-2 shrink-0">
-                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-md">
+                <div 
+                  className="w-8 h-8 rounded-lg flex items-center justify-center shadow-md"
+                  style={{ background: 'linear-gradient(135deg, #4285F4 0%, #34A853 100%)' }}
+                >
                   <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
                   </svg>
@@ -300,7 +331,7 @@ export default function Chat({ onEventUpdated }: ChatProps) {
               <div
                 className={`break-words ${
                   m.role === "user"
-                    ? "bg-gradient-to-br from-indigo-500 to-purple-600 text-white rounded-2xl rounded-br-sm px-4 py-3 shadow-md"
+                    ? "bg-[#4285F4] text-white rounded-2xl rounded-br-sm px-4 py-3 shadow-md"
                     : "bg-white text-gray-800 rounded-2xl rounded-bl-sm px-4 py-3 shadow-md border border-gray-100"
                 }`}
               >
@@ -335,7 +366,10 @@ export default function Chat({ onEventUpdated }: ChatProps) {
         {streamingText && (
           <div className="flex justify-start animate-in fade-in-0 slide-in-from-bottom-2 duration-300">
             <div className="mr-2 shrink-0">
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-md">
+              <div 
+                className="w-8 h-8 rounded-lg flex items-center justify-center shadow-md"
+                style={{ background: 'linear-gradient(135deg, #4285F4 0%, #34A853 100%)' }}
+              >
                 <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
                 </svg>
@@ -353,7 +387,10 @@ export default function Chat({ onEventUpdated }: ChatProps) {
         {isThinking && !streamingText && (
           <div className="flex justify-start animate-in fade-in-0 slide-in-from-bottom-2 duration-300">
             <div className="mr-2 shrink-0">
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-md">
+              <div 
+                className="w-8 h-8 rounded-lg flex items-center justify-center shadow-md"
+                style={{ background: 'linear-gradient(135deg, #4285F4 0%, #34A853 100%)' }}
+              >
                 <svg className="w-4 h-4 text-white animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
                 </svg>
@@ -361,9 +398,9 @@ export default function Chat({ onEventUpdated }: ChatProps) {
             </div>
             <div className="bg-white text-gray-800 rounded-2xl rounded-bl-sm px-4 py-3 shadow-md border border-gray-100">
               <div className="flex items-center gap-1.5">
-                <div className="w-2 h-2 bg-indigo-500 rounded-full animate-bounce" style={{ animationDelay: "0ms" }}></div>
-                <div className="w-2 h-2 bg-indigo-500 rounded-full animate-bounce" style={{ animationDelay: "150ms" }}></div>
-                <div className="w-2 h-2 bg-indigo-500 rounded-full animate-bounce" style={{ animationDelay: "300ms" }}></div>
+                <div className="w-2 h-2 bg-[#4285F4] rounded-full animate-bounce" style={{ animationDelay: "0ms" }}></div>
+                <div className="w-2 h-2 bg-[#4285F4] rounded-full animate-bounce" style={{ animationDelay: "150ms" }}></div>
+                <div className="w-2 h-2 bg-[#4285F4] rounded-full animate-bounce" style={{ animationDelay: "300ms" }}></div>
               </div>
             </div>
           </div>
@@ -381,7 +418,7 @@ export default function Chat({ onEventUpdated }: ChatProps) {
               <button
                 key={i}
                 onClick={() => handleQuickAction(action)}
-                className="text-xs px-3 py-1.5 bg-gray-100 hover:bg-indigo-100 hover:text-indigo-700 text-gray-600 rounded-full transition-colors"
+                className="text-xs px-3 py-1.5 bg-gray-100 hover:bg-[#4285F4]/10 hover:text-[#4285F4] text-gray-600 rounded-full transition-colors"
               >
                 {action}
               </button>
@@ -395,7 +432,7 @@ export default function Chat({ onEventUpdated }: ChatProps) {
         <div className="flex items-end gap-2">
           <div className="flex-1 relative">
             <textarea
-              className="w-full border border-gray-200 rounded-xl px-4 py-3 pr-12 focus:outline-none focus:ring-2 focus:ring-indigo-300 focus:border-transparent resize-none text-sm bg-gray-50 placeholder-gray-400 transition-all"
+              className="w-full border border-gray-200 rounded-xl px-4 py-3 pr-12 focus:outline-none focus:ring-2 focus:ring-[#4285F4]/30 focus:border-transparent resize-none text-sm bg-gray-50 placeholder-gray-400 transition-all"
               placeholder="Ask me anything about your calendar..."
               value={input}
               onChange={(e) => setInput(e.target.value)}
@@ -413,7 +450,7 @@ export default function Chat({ onEventUpdated }: ChatProps) {
           <button
             className={`shrink-0 w-12 h-12 rounded-xl flex items-center justify-center transition-all duration-200 ${
               input.trim()
-                ? "bg-gradient-to-br from-indigo-500 to-purple-600 text-white shadow-lg hover:shadow-xl hover:scale-105"
+                ? "bg-[#4285F4] text-white shadow-lg hover:shadow-xl hover:scale-105"
                 : "bg-gray-100 text-gray-400"
             }`}
             onClick={sendMessage}
@@ -429,6 +466,75 @@ export default function Chat({ onEventUpdated }: ChatProps) {
           Press Enter to send • Shift+Enter for new line
         </p>
       </div>
+
+      {/* Disconnect Confirmation Modal */}
+      {showDisconnectConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          {/* Backdrop with blur */}
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-md"></div>
+          
+          {/* Modal */}
+          <div className="relative bg-white rounded-3xl shadow-2xl p-8 md:p-10 max-w-lg w-full">
+            {/* Decorative gradient background */}
+            <div 
+              className="absolute top-0 left-0 right-0 h-32 rounded-t-3xl opacity-10"
+              style={{ background: 'linear-gradient(135deg, #4285F4 0%, #34A853 100%)' }}
+            ></div>
+
+            {/* Content */}
+            <div className="relative">
+              {/* AI Avatar */}
+              <div className="flex justify-center mb-6">
+                <div className="relative">
+                  <div className="absolute inset-0 bg-gradient-to-br from-[#4285F4] to-[#34A853] rounded-full blur-xl opacity-30 animate-pulse"></div>
+                  <div className="relative w-24 h-24 md:w-28 md:h-28">
+                    <Image
+                      src="/AI-Avatar.png"
+                      alt="Cal-E Avatar"
+                      width={112}
+                      height={112}
+                      className="drop-shadow-lg"
+                      priority
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Title */}
+              <h2 className="text-2xl md:text-3xl font-bold text-gray-900 text-center mb-3">
+                Disconnect?
+              </h2>
+
+              {/* Message */}
+              <p className="text-gray-600 text-center mb-8 leading-relaxed text-base">
+                Are you sure you want to disconnect? You&apos;ll need to log in again to use Cal-E.
+              </p>
+
+              {/* Buttons */}
+              <div className="flex flex-col sm:flex-row gap-3">
+                {/* Yes Button */}
+                <button
+                  onClick={confirmDisconnect}
+                  className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl px-6 py-3.5 text-white font-semibold transition-all duration-300 hover:scale-105 hover:shadow-xl"
+                  style={{
+                    background: 'linear-gradient(135deg, #4285F4 0%, #34A853 100%)'
+                  }}
+                >
+                  Yes
+                </button>
+
+                {/* No Button */}
+                <button
+                  onClick={() => setShowDisconnectConfirm(false)}
+                  className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl px-6 py-3.5 bg-gray-100 text-gray-700 font-semibold transition-all duration-300 hover:bg-gray-200 hover:scale-105 border border-gray-200"
+                >
+                  No
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
