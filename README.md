@@ -225,14 +225,6 @@ npm start
 - OAuth state parameter (prevents CSRF)
 - Server-side token validation
 
-## 🤝 Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
-
-## 📄 License
-
-This project is private and proprietary.
-
 ## 🙏 Acknowledgments
 
 - [Zypher](https://github.com/corespeed/zypher) - AI agent framework
