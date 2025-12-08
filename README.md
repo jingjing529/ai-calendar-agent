@@ -2,6 +2,12 @@
 
 An intelligent calendar assistant that helps you manage your Google Calendar through natural language conversations. Built with Next.js and Zypher.
 
+🌐 **Live Demo**: [https://ai-calendar-agent.vercel.app/](https://ai-calendar-agent.vercel.app/)
+
+**Deployment:**
+- **Frontend**: Hosted on [Vercel](https://vercel.com)
+- **Backend**: Hosted on AWS EC2
+
 ## ✨ Features
 
 - 🤖 **Natural Language Interface**: Talk to Cal-E like a human assistant
@@ -44,12 +50,14 @@ An intelligent calendar assistant that helps you manage your Google Calendar thr
 - **Tailwind CSS** - Styling
 - **FullCalendar** - Calendar visualization
 - **Google Calendar API** - Calendar operations
+- **Hosting**: [Vercel](https://vercel.com)
 
 ### Backend
 - **Deno** - Runtime
 - **Zypher Agent** - AI agent framework
 - **Claude Sonnet 4** - AI model
 - **Anthropic API** - AI service
+- **Hosting**: AWS EC2
 
 ## 📋 Prerequisites
 
@@ -58,7 +66,17 @@ An intelligent calendar assistant that helps you manage your Google Calendar thr
 - Google Cloud Console account
 - Anthropic API key
 
-## 🚀 Getting Started
+## 🌐 Access the Application
+
+**Production URL**: [https://ai-calendar-agent.vercel.app/](https://ai-calendar-agent.vercel.app/)
+
+Simply visit the URL above and click "Get Started" to connect your Google Calendar. No installation required!
+
+---
+
+## 🚀 Local Development Setup
+
+If you want to run the application locally for development:
 
 ### 1. Clone the repository
 
@@ -76,12 +94,14 @@ cd ai-calendar-agent
    - Go to "APIs & Services" > "Credentials"
    - Click "Create Credentials" > "OAuth client ID"
    - Application type: Web application
-   - Authorized redirect URIs: `http://localhost:3000/api/auth/google/callback`
+   - Authorized redirect URIs: 
+     - For local dev: `http://localhost:3000/api/auth/google/callback`
+     - For production: `https://ai-calendar-agent.vercel.app/api/auth/google/callback`
 5. Save your `Client ID` and `Client Secret`
 
 ### 3. Configure Environment Variables
 
-#### Frontend (`.env` in `frontend/` directory)
+#### Frontend (`.env.local` in `frontend/` directory)
 
 ```env
 GOOGLE_CLIENT_ID=your_google_client_id
@@ -111,7 +131,7 @@ cd backend
 # Deno will auto-install dependencies on first run
 ```
 
-### 5. Run the Application
+### 5. Run the Application Locally
 
 #### Start Backend (Terminal 1)
 ```bash
