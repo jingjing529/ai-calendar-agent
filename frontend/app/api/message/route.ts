@@ -104,7 +104,6 @@ export async function POST(req: NextRequest) {
 
     const encoder = new TextEncoder();
 
-    // 用 ReadableStream 处理流式响应，只发送 message 部分
     const stream = new ReadableStream<Uint8Array>({
       async start(controller) {
         const reader = upstreamRes.body!.getReader();
@@ -124,23 +123,23 @@ export async function POST(req: NextRequest) {
             const separatorIndex = buffer.indexOf(JSON_META_SEPARATOR);
 
             if (separatorIndex !== -1) {
-              // 发送分隔符之前的 message 部分
+              // 发送分隔符之前的 message 部分（立即发送，不等待）
               if (!metaStarted) {
-                const messagePart = buffer.slice(0, separatorIndex).trim();
+                const messagePart = buffer.slice(0, separatorIndex);
                 if (messagePart) {
+                  // 立即发送所有内容，实现快速流式输出
                   controller.enqueue(encoder.encode(messagePart));
                 }
                 metaStarted = true;
+                // 移除已发送的部分和分隔符
+                buffer = buffer.slice(separatorIndex + JSON_META_SEPARATOR.length);
               }
-              // 分隔符之后的部分是 JSON metadata，我们用 SSE 格式发送
-              buffer = buffer.slice(separatorIndex + JSON_META_SEPARATOR.length);
             } else if (!metaStarted) {
-              // 还没遇到分隔符，流式发送当前内容（保留一些 buffer 以防分隔符被截断）
-              const safeLength = buffer.length - JSON_META_SEPARATOR.length;
-              if (safeLength > 0) {
-                const safeContent = buffer.slice(0, safeLength);
-                controller.enqueue(encoder.encode(safeContent));
-                buffer = buffer.slice(safeLength);
+              // 还没遇到分隔符，立即发送所有新内容（不缓冲）
+              // 这样可以实现类似 GPT 的快速流式输出
+              if (buffer.length > 0) {
+                controller.enqueue(encoder.encode(buffer));
+                buffer = ""; // 清空 buffer，立即转发
               }
             }
           }
@@ -153,7 +152,7 @@ export async function POST(req: NextRequest) {
           // 如果有 JSON metadata，用特殊标记发送给前端
           if (metaStarted && buffer.trim()) {
             const jsonMeta = buffer.trim();
-            // 用特殊前缀发送 metadata，前端可以识别并解析
+            // 发送 metadata（不需要逐字符，因为前端不会显示）
             controller.enqueue(encoder.encode(`\n${JSON_META_SEPARATOR}\n${jsonMeta}`));
           }
         } catch (err) {

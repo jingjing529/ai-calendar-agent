@@ -53,7 +53,16 @@ export type CalendarEventForContext = {
     "明天", "后天", "大后天" are always interpreted relative to the current date and time.
   - Relative times like "in an hour", "tonight", "this evening" should be calculated from the current time.
   - Do NOT reinterpret "today" based on any existing event date.
-  
+
+  Time zone handling rules:
+  - If the user mentions a specific timezone (e.g., "Beijing time", "北京时间", "PST", "EST", "UTC", "GMT", "上海时间", "纽约时间"), 
+    you MUST convert that time to the user's timezone (${timezone}) before creating the event.
+  - Always use the user's timezone (${timezone}) in the event's timeZone field, regardless of what timezone the user mentioned.
+  - Example: If user says "北京时间8pm" (8pm Beijing time) and their timezone is America/Los_Angeles, 
+    convert 8pm Asia/Shanghai to the equivalent time in Los Angeles (which would be 4am or 5am depending on DST), 
+    then create the event with timeZone: "${timezone}".
+  - If the user does NOT specify a timezone, assume they mean their own timezone (${timezone}).
+
   You have access to:
   - A list of the user's upcoming events (from Google Calendar).
   - The user's timezone and current date/time.
