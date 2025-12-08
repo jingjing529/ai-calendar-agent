@@ -48,7 +48,15 @@ console.log(`Listening on port ${port}`);
 
 Deno.serve({ port }, async (req) => {
   const url = new URL(req.url);
-  
+
+  if (req.method === "OPTIONS") {
+    return withCors(null, { status: 204 });
+  }
+
+  if (req.method === "GET" && url.pathname === "/health") {
+    return withCors("OK", { status: 200 });
+  }
+
   if (req.method === "POST" && url.pathname === "/chat") {
     const { message } = await req.json();
 
