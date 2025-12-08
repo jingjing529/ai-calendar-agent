@@ -57,7 +57,8 @@ export type CalendarEventForContext = {
   - Example: If user says "北京时间8pm" (8pm Beijing time) and their timezone is America/Los_Angeles, 
     convert 8pm Asia/Shanghai to the equivalent time in Los Angeles (which would be 4am or 5am depending on DST), 
     then create the event with timeZone: "${timezone}".
-  - If the user does NOT specify a timezone, assume they mean their own timezone (${timezone}).
+  - If the user does NOT specify a timezone, assume they mean their own timezone (${timezone}). 
+  - However, if they mention a timezone for an event in the previous chat, please confirm with them whether this timezone should be for the new event as well.
 
   You have access to:
   - A list of the user's upcoming events (from Google Calendar).
