@@ -11,7 +11,19 @@ function getRequiredEnv(name: string): string {
   return v;
 }
 
-// Initialize Zypher
+const port = Number(Deno.env.get("PORT") ?? "8000");
+
+const FRONTEND_ORIGIN = Deno.env.get("FRONTEND_ORIGIN") ?? "*";
+
+function withCors(body: BodyInit | null, init: ResponseInit = {}): Response {
+  const headers = new Headers(init.headers);
+  headers.set("Access-Control-Allow-Origin", FRONTEND_ORIGIN);
+  headers.set("Access-Control-Allow-Methods", "GET,POST,OPTIONS");
+  headers.set("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  headers.set("Access-Control-Allow-Credentials", "true");
+  return new Response(body, { ...init, headers });
+}
+
 const zypherContext = await createZypherContext(Deno.cwd());
 
 const agent = new ZypherAgent(
@@ -21,7 +33,6 @@ const agent = new ZypherAgent(
   })
 );
 
-// Register MCP server for web crawling
 await agent.mcp.registerServer({
   id: "firecrawl",
   type: "command",
@@ -32,11 +43,12 @@ await agent.mcp.registerServer({
   },
 });
 
-console.log("🔥 Zypher Agent initialized.");
+console.log("Zypher Agent initialized.");
+console.log(`Listening on port ${port}`);
 
-Deno.serve(async (req) => {
+Deno.serve({ port }, async (req) => {
   const url = new URL(req.url);
-
+  
   if (req.method === "POST" && url.pathname === "/chat") {
     const { message } = await req.json();
 
@@ -60,14 +72,14 @@ Deno.serve(async (req) => {
       },
     });
 
-    return new Response(body, {
+    return withCors(body, {
       status: 200,
       headers: {
         "Content-Type": "text/plain; charset=utf-8",
+        "Transfer-Encoding": "chunked",
       },
     });
   }
 
-  return new Response("Not found", { status: 404 });
+  return withCors("Not found", { status: 404 });
 });
-
