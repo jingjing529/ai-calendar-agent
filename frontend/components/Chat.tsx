@@ -62,8 +62,6 @@ export default function Chat({ onEventUpdated }: ChatProps) {
   };
 
   const JSON_META_SEPARATOR = "---JSON_META---";
-  
-  const controllerRef = useRef<AbortController | null>(null);
 
   const sendMessage = async () => {
     if (!input.trim()) return;
@@ -75,9 +73,7 @@ export default function Chat({ onEventUpdated }: ChatProps) {
     try {
       setIsThinking(true);
       setStreamingText(""); 
-      const controller = new AbortController();
-      controllerRef.current = controller;
-      
+
       const timezone =
         Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
 
@@ -85,7 +81,6 @@ export default function Chat({ onEventUpdated }: ChatProps) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ message: userMessage, timezone }),
-        signal: controller.signal,
       });
 
       if (!res.body) {
@@ -149,22 +144,14 @@ export default function Chat({ onEventUpdated }: ChatProps) {
         await handleEventAction(assistantMessage);
       }
     } catch (err) {
-      if (err.name === "AbortError") {
-      setMessages((prev) => [
-        ...prev,
-        { role: "assistant", text: "[Stopped]", timestamp: new Date() },
-      ]);
-    } else {
       console.error(err);
       setMessages((prev) => [
         ...prev,
         { role: "assistant", text: "Sorry, I encountered an error. Please try again.", timestamp: new Date() },
       ]);
-    }
       setStreamingText("");
     } finally {
       setIsThinking(false);
-      controllerRef.current = null;
     }
   };
 
@@ -440,30 +427,21 @@ export default function Chat({ onEventUpdated }: ChatProps) {
               aria-label="Message"
             />
           </div>
+
           <button
             className={`shrink-0 w-12 h-12 rounded-xl flex items-center justify-center transition-all duration-200 ${
-              !isThinking && input.trim()
+              input.trim()
                 ? "bg-[#4285F4] text-white shadow-lg hover:shadow-xl hover:scale-105"
-                : "bg-red-500 text-white shadow hover:bg-red-600"
+                : "bg-gray-100 text-gray-400"
             }`}
-            onClick={
-              !isThinking && input.trim()
-                ? sendMessage
-                : () => controllerRef.current?.abort()
-            }
-            aria-label={!isThinking && input.trim() ? "Send" : "Stop"}
+            onClick={sendMessage}
+            disabled={!input.trim() || isThinking}
+            aria-label="Send"
           >
-            {!isThinking && input.trim() ? (
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-              </svg>
-            ) : (
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 6l12 12M6 18L18 6" />
-              </svg>
-            )}
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+            </svg>
           </button>
-
         </div>
         <p className="text-[10px] text-gray-400 mt-2 text-center">
           Press Enter to send • Shift+Enter for new line
