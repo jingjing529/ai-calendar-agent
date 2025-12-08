@@ -100,15 +100,12 @@ export default function Chat({ onEventUpdated }: ChatProps) {
 
         const separatorIndex = fullText.indexOf(JSON_META_SEPARATOR);
         if (separatorIndex !== -1) {
-          // 只显示分隔符之前的 message 部分
           setStreamingText(fullText.slice(0, separatorIndex).trim());
         } else {
-          // 还没遇到分隔符，显示全部内容
           setStreamingText(fullText);
         }
       }
 
-      // 流结束：解析 message 和 JSON metadata
       let messageText = fullText;
       let action: "insert" | "edit" | "delete" | undefined;
       let event: any;
@@ -227,7 +224,6 @@ export default function Chat({ onEventUpdated }: ChatProps) {
     }
   };
 
-  // 新消息或 streamingText 变化时自动滚动到底部
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, isThinking, streamingText]);
