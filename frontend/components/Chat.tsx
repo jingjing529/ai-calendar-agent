@@ -62,6 +62,8 @@ export default function Chat({ onEventUpdated }: ChatProps) {
   };
 
   const JSON_META_SEPARATOR = "---JSON_META---";
+  
+  const controllerRef = useRef<AbortController | null>(null);
 
   const sendMessage = async () => {
     if (!input.trim()) return;
