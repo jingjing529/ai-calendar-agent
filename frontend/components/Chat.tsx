@@ -413,11 +413,13 @@ export default function Chat({ onEventUpdated }: ChatProps) {
             <textarea
               className="w-full border border-gray-200 rounded-xl px-4 py-3 pr-12 focus:outline-none focus:ring-2 focus:ring-[#4285F4]/30 focus:border-transparent resize-none text-sm bg-gray-50 placeholder-gray-400 transition-all text-black"
               placeholder="Ask me anything about your calendar..."
+              disabled={isThinking}
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) =>
                 e.key === "Enter" &&
                 !e.shiftKey &&
+                !isThinking &&
                 (e.preventDefault(), sendMessage())
               }
               rows={1}
