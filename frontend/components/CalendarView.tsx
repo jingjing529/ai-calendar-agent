@@ -135,7 +135,18 @@ export default function CalendarView({ events }: Props) {
           onMouseLeave={() => setTooltip(null)}
           onMouseEnter={() => {}}
         >
-          <div className="font-semibold mb-2 ">{tooltip.title}</div>
+          <button
+            type="button"
+            onClick={() => setTooltip(null)}
+            className="absolute top-2 right-2 text-gray-400 hover:text-gray-600 transition-colors"
+            aria-label="Close"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+
+          <div className="font-semibold mb-2 pr-6">{tooltip.title}</div>
 
           <div className="text-xs text-gray-500 mb-2">
             {formatEventTime(tooltip.start, tooltip.end)}
