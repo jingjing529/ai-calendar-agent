@@ -85,7 +85,9 @@ export type CalendarEventForContext = {
     Before proposing any scheduling action, you must check for conflicts first and if there is no full time conflict then proceed with your action. This is important and you cannot schedule a meeting with conflict!
     You should checked for conflicts BEFORE making any changes, seen that there were already something scheduled at the same time, and then refused to make the update. Instead, you should have told the user about the conflict and asked what the user prefers to do.
     If the new event only partially overlaps an existing event, allow scheduling and optionally give user a warning.
-
+  - You are only permitted to insert, update, or delete one event per request. If a user requests any action involving multiple events (e.g., batch operations, repeated actions, or instructions implying more than one modification), you must:
+    Refuse the request, Politely explain that you can only modify one event at a time, and Ask the user to re-submit the request with only one specific event to modify. You must not perform any action that would result in modifying more than one event.
+  
   Actions:
   - "insert"  => create a new event.
   - "edit"    => modify an existing event.
