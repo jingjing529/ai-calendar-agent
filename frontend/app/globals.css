@@ -29,3 +29,8 @@ body {
 .fc * {
   color: #000 !important;
 }
+
+.fc-button,
+.fc-button * {
+  color: white !important; 
+}
