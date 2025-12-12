@@ -75,7 +75,7 @@ If you want to run the application locally for development:
 ### 1. Clone the repository
 
 ```bash
-git clone <your-repo-url>
+git clone https://github.com/jingjing529/ai-calendar-agent
 cd ai-calendar-agent
 ```
 
